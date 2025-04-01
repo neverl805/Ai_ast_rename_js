@@ -4,13 +4,14 @@ import path from "path";
 import { getLlama, LlamaChatSession } from "node-llama-cpp";
 
 // 获取当前目录（适用于ES模块）
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const model_path = path.join(__dirname, "models/Phi-3.1-mini-4k-instruct-Q4_K_M.gguf")
 
 async function runTest() {
     // 加载 Llama 实例及模型（请确保 modelPath 指向你的 gguf 模型文件）
     const llama = await getLlama();
     const model = await llama.loadModel({
-        modelPath: 'E:\\model_cache\\Phi-3.1-mini-4k-instruct-Q4_K_M.gguf',
+        modelPath: model_path,
         useGPU: true
     });
 
