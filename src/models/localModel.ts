@@ -4,11 +4,11 @@
  *
  * 注意：此实现是一个简化版，实际生产中需要集成具体的本地LLM库，如llama.cpp的Node.js绑定
  */
-import {LLMModel, LocalModelConfig} from '../utils/types.js';
-import {logVerbose, logWarning} from '../utils/logger.js';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
+import {LLMModel, LocalModelConfig} from '../utils/types.js';
+import {logVerbose, logWarning} from '../utils/logger.js';
 
 // 类型定义
 type GetLlamaFunc = (options: { gpu: boolean | string }) => Promise<any>;
@@ -184,7 +184,7 @@ export class LocalModel implements LLMModel {
             }
 
             // 初始化llama实例，先尝试使用GPU（如果启用）
-            let useGpuOption = this.useGPU && !this.gpuFailed ? "auto" : false;
+            const useGpuOption = this.useGPU && !this.gpuFailed ? "auto" : false;
 
             try {
                 this.llamaInstance = await getLlama({gpu: useGpuOption});
@@ -192,7 +192,7 @@ export class LocalModel implements LLMModel {
                 // 捕获可能的CUDA初始化错误
                 if (this.useGPU && !this.gpuFailed) {
                     logWarning(`GPU初始化失败，错误: ${error}。将回退到CPU模式`);
-                    this.gpuFailed = true;  // 标记GPU失败
+                    this.gpuFailed = true; // 标记GPU失败
 
                     // 重试，但使用CPU模式
                     this.llamaInstance = await getLlama({gpu: false});
@@ -206,7 +206,8 @@ export class LocalModel implements LLMModel {
             try {
                 this.model = await this.llamaInstance.loadModel({
                     modelPath: this.modelPath,
-                    gpuLayers: this.useGPU && !this.gpuFailed ? undefined : 0
+                    gpuLayers: this.useGPU && !this.gpuFailed ? undefined : 0,
+                    defaultContextFlashAttention: true
                 });
             } catch (error) {
                 // 如果模型加载失败且正在使用GPU，尝试回退到CPU
@@ -218,7 +219,7 @@ export class LocalModel implements LLMModel {
                     this.llamaInstance = await getLlama({gpu: false});
                     this.model = await this.llamaInstance.loadModel({
                         modelPath: this.modelPath,
-                        gpuLayers: 0  // 显式设置为0，使用CPU
+                        gpuLayers: 0 // 显式设置为0，使用CPU
                     });
                 } else {
                     throw error;
@@ -325,12 +326,17 @@ export class LocalModel implements LLMModel {
         
                 ${context}
                 
-                Analyze what this variable does based on its usage, and suggest a descriptive and meaningful name for it. 
-                The name should follow these guidelines:
-                - Use camelCase
+                First, determine if this variable name is already meaningful and descriptive. If the current name is already 
+                meaningful and follows good naming conventions, respond with the original name.
+                
+                Only if the name is unclear, abbreviated, or non-descriptive, suggest a better name that follows these guidelines:
+                - Use snake_case (all lowercase with underscores separating words)
                 - Be descriptive but concise
-                - Avoid abbreviations unless they're very common
-                - Use common naming conventions for specific types (e.g., 'count' for counters, 'is/has' for booleans)`,
+                - Limit the name to a maximum of 3 words separated by underscores
+                - You can use common abbreviations for longer words (e.g., 'cfg' for 'configuration', 'idx' for 'index', 'elem' for 'element')
+                - Use common naming conventions for specific types (e.g., 'count' for counters, 'is_' or 'has_' prefix for booleans)
+                - Always use underscores to separate words (e.g., 'user_data' not 'userData' or 'userdata')
+                - For longer concepts, prefer abbreviations to stay within the 3-word limit (e.g., use 'api_req_count' instead of 'api_request_count')`,
                 gbnf`A good name for this variable would be '${/[a-zA-Z][a-zA-Z0-9_]*/}'`
             );
 
@@ -363,13 +369,19 @@ export class LocalModel implements LLMModel {
         
                 ${context}
                 
-                Analyze what this function does, and suggest a descriptive and meaningful name for it.
-                The name should follow these guidelines:
-                - Use camelCase
+                First, determine if this function name is already meaningful and descriptive. If the current name is already 
+                meaningful and follows good naming conventions, respond with the original name.
+                
+                Only if the name is unclear, abbreviated, or non-descriptive, suggest a better name that follows these guidelines:
+                - Use snake_case (all lowercase with underscores separating words)
                 - Start with a verb (e.g., get, fetch, calculate, process)
                 - Be descriptive but concise
-                - Follow the "verb + noun" pattern where appropriate
-                - Reflect the function's primary purpose`,
+                - Limit the name to a maximum of 3 words separated by underscores
+                - You can use common abbreviations for longer words (e.g., 'cfg' for 'configuration', 'calc' for 'calculate', 'init' for 'initialize')
+                - Follow the "verb_noun" pattern where appropriate (use underscore between verb and noun)
+                - Reflect the function's primary purpose
+                - Always use underscores to separate words (e.g., 'get_data' not 'getData' or 'getdata')
+                - For longer concepts, prefer abbreviations to stay within the 3-word limit (e.g., use 'fetch_user_auth' instead of 'fetch_user_authentication')`,
                 gbnf`A good name for this function would be '${/[a-zA-Z][a-zA-Z0-9_]*/}'`
             );
 
