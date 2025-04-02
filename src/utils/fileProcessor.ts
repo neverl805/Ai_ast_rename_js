@@ -27,18 +27,21 @@ export async function processCodeFile(code: string, options: RenameOptions): Pro
         logVerbose('预处理完成', options.verbose);
 
         // 3. 创建LLM模型实例
-        const model = createModel(options.modelType, options.modelConfig);
-        logVerbose('模型初始化完成', options.verbose);
+        // const model = createModel(options.modelType, options.modelConfig);
+        // logVerbose('模型初始化完成', options.verbose);
 
         // 4. 创建访问者函数，用于获取重命名建议
         const visitor: Visitor = async (name, context) => {
             // 对于以下模式的变量/函数，我们直接保留原名
             if (name.length > 10 || // 长名称可能已经有意义
-                /^[A-Z][A-Z0-9_]+$/.test(name) || // 常量（全大写）
+                // /^[A-Z][A-Z0-9_]+$/.test(name) || // 常量（全大写）
                 (name.includes('_') && isMeaningfulName(name))) { // 已经是可能有意义的蛇形命名
               return name;
             }
 
+            console.log(name)
+            console.log(context)
+            return name;
 
             try {
                 // 根据名称长度选择合适的处理方法
