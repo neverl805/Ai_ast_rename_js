@@ -6,12 +6,17 @@
 import fs from 'fs/promises';
 import path from 'path';
 import {optimizeCode, ModelType, RenameOptions} from './index.js';
+import {fileURLToPath} from "url";
+
+const __dirname = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+// const model_path = path.join(__dirname, "models/Phi-3.1-mini-4k-instruct-Q4_K_M.gguf")
+
 
 async function main() {
     try {
 
         // 读取JS文件
-        const filePath = 'E:\\cursor_project\\ast_rename\\ast_rename_core\\demo\\test.js';
+        const filePath = path.join(__dirname, "demo/akm.js")
         const code = await fs.readFile(filePath, 'utf-8');
 
         console.log(`开始处理文件: ${filePath}`);
