@@ -23,6 +23,13 @@
 *欢迎贡献代码和提供反馈，一起让代码更易读、更易维护！*
 加v一起讨论: xu970821582
 
+
+注意：此项目门槛可能有点高,基于ts开发,以及涉及大模型推理,有一定硬件配置门槛。
+
+技术上需要ts基础,node.js基础,以及深度学习基础.因为自己二开的话需要考虑任务处理时显存分配,会话管理,上下文管理,内存释放,否则很容易出现显存溢出等问题.
+
+
+
 ## 项目介绍
 
 AST智能变量重命名工具是一个基于抽象语法树(AST)和大型语言模型(LLM)的JavaScript/TypeScript代码优化工具。它能够智能识别代码中的变量、函数和类名，并利用人工智能技术将简短或语义不明确的标识符重命名为更具描述性和可读性的名称，从而提升代码的可维护性。
@@ -304,19 +311,17 @@ class Util {
 **优化后：**
 
 ```javascript
-class ConfigurationUtility {
-  constructor(configuration) {
-    this.configuration = configuration;
-    this.creationDate = new Date();
-  }
-
-  getValue(key) {
-    return this.configuration[key] || null;
-  }
-
-  setValue(key, value) {
-    this.configuration[key] = value;
-  }
+class config_get_v {
+    constructor(user_config_timestamp) {
+        this.cfg = user_config_timestamp;
+        this.d = new Date();
+    }
+    getV(config_key) {
+        return this.cfg[config_key] || null;
+    }
+    setV(set_config_value, set_config_value_to_v) {
+        this.cfg[set_config_value] = set_config_value_to_v;
+    }
 }
 ```
 
@@ -345,6 +350,34 @@ function splitStringIntoChunks(inputString, chunkSize) {
   }
   
   return chunks;
+}
+```
+
+
+### 示例5：1700行js混淆代码恢复(展示一部分效果,代码在demo文件夹中,整体耗时200s左右,本人测试的显卡是4070ti super)
+
+**优化前：**
+
+```javascript
+function _0x228534() {
+    let _0x40df01 = Array["from"](document["getElementsByClassName"]("preview"));
+    for (let _0x2562ed = 0; _0x2562ed < _0x40df01["length"]; _0x2562ed++) {
+        const _0x118aaa = _0x40df01[_0x2562ed];
+        _0x118aaa["pause"]();
+        _0x118aaa["currentTime"] = 0;
+    }
+}```
+
+**优化后：**
+
+```javascript
+function pauseAllVideos() {
+    let videoPreviewQueue = Array["from"](document["getElementsByClassName"]("preview"));
+    for (let ___i = 0; ___i < videoPreviewQueue["length"]; ___i++) {
+        const videoPreview = videoPreviewQueue[___i];
+        videoPreview["pause"]();
+        videoPreview["currentTime"] = 0;
+    }
 }
 ```
 
