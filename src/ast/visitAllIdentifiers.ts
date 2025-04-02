@@ -8,6 +8,8 @@
 import {parseAsync, transformFromAstAsync, NodePath} from '@babel/core';
 import _traverse from '@babel/traverse';
 import {Identifier, toIdentifier, Node} from '@babel/types';
+import {generate} from '@babel/generator';
+
 import {logVerbose} from '../utils/logger.js';
 
 // 处理@babel/traverse模块导入兼容性
@@ -167,7 +169,8 @@ function getContextCode(
     contextWindowSize: number
 ): string {
     const surroundingPath = closestSurroundingContextPath(path);
-    const code = `${surroundingPath}`; // 利用toString()获取代码
+
+    const code = generate(surroundingPath.node,{minified:true}).code; // 使用minified选项生成最小化的代码
 
     if (code.length < contextWindowSize) {
         return code;
